@@ -8,7 +8,6 @@ import multiprocessing as mp
 
 import numpy as np
 import plyfile
-import scannet_util
 import torch
 
 # Map relevant classes to {0,1,...,19}, and ignored classes to -100
@@ -24,6 +23,7 @@ split = opt.data_split
 print('data split: {}'.format(split))
 files = sorted(glob.glob(split + '/*_vh_clean_2.ply'))
 if opt.data_split != 'test':
+    import scannet_util
     files2 = sorted(glob.glob(split + '/*_vh_clean_2.labels.ply'))
     files3 = sorted(glob.glob(split + '/*_vh_clean_2.0.010000.segs.json'))
     files4 = sorted(glob.glob(split + '/*[0-9].aggregation.json'))
