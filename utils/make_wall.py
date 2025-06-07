@@ -187,9 +187,6 @@ def create_plane_mesh(inlier_cloud, plane_model, num_points=50000):
     return new_plane_pcd, corners_3d
 
 def make_wall(pcd, max_planes=30):
-
-    pcd = pcd.voxel_down_sample(voxel_size=0.005)
-
     # 여러 평면 검출 파라미터
     max_planes = max_planes
     min_inliers = len(pcd.points) * 0.03
