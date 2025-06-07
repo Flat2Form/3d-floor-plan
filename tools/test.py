@@ -2,6 +2,7 @@ import argparse
 import multiprocessing as mp
 import os
 import os.path as osp
+import shutil
 
 import numpy as np
 import torch
@@ -202,6 +203,12 @@ def main():
         if 'panoptic' in eval_tasks:
             save_panoptic(args.out, 'panoptic', scan_ids, panoptic_preds, dataset.learning_map_inv,
                           cfg.model.semantic_classes)
+        
+        # Move completed data to test/done directory
+        done_dir = osp.join(cfg.data.test, 'done')
+        os.makedirs(done_dir, exist_ok=True)
+        shutil.move(args.out, done_dir)
+        logger.info(f'Moved results to {done_dir}')
 
 
 if __name__ == '__main__':
