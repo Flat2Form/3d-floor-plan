@@ -6,7 +6,7 @@
 ROOM_NAME=$1  # 예: scaniverse-model 62
 OUT_FILE=$2   # 예: scaniverse_model_62_pred.ply
 
-python3 tools/bounding_box.py \
+python3 utils/bounding_box.py \
   --prediction_path results/ \
   --room_name "$ROOM_NAME" \
   --task bounding_box \
