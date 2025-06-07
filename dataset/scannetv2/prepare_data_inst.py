@@ -38,6 +38,8 @@ def f_test(fn):
     points = np.array([list(x) for x in f.elements[0]])
     coords = np.ascontiguousarray(points[:, :3] - points[:, :3].mean(0))
     colors = np.ascontiguousarray(points[:, 3:6]) / 127.5 - 1
+    if colors.shape[1] == 0:  # color 정보가 없는 경우
+        colors = np.zeros((points.shape[0], 3)) / 127.5 - 1
 
     # test 폴더에 저장
     output_file = os.path.join(split, os.path.basename(fn)[:-4] + '_inst_nostuff.pth')
