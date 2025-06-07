@@ -204,11 +204,18 @@ def main():
             save_panoptic(args.out, 'panoptic', scan_ids, panoptic_preds, dataset.learning_map_inv,
                           cfg.model.semantic_classes)
         
-        # Move completed data to test/done directory
-        done_dir = osp.join(cfg.data.test, 'done')
+        # move data to done directory
+        test_dir = osp.join(cfg.data.test.data_root, 'test')
+        done_dir = osp.join(cfg.data.test.data_root, 'test', 'done')
         os.makedirs(done_dir, exist_ok=True)
-        shutil.move(args.out, done_dir)
-        logger.info(f'Moved results to {done_dir}')
+        
+        for scan_id in scan_ids:
+            src_file = osp.join(test_dir, scan_id + cfg.data.test.suffix)
+            if osp.exists(src_file):
+                shutil.move(src_file, done_dir)
+                logger.info(f'Moved {src_file}.pth to {done_dir}')
+            else:
+                logger.warning(f'File not found: {src_file}')
 
 
 if __name__ == '__main__':
