@@ -28,6 +28,7 @@ model:
     mask_score_thr: -0.5
     min_npoint: 100
     eval_tasks: ['semantic', 'instance']
+    save_instance: True       # ✅ 이 줄 추가
   fixed_modules: ['input_conv', 'unet', 'output_layer', 'semantic_linear', 'offset_linear']
 
 data:
@@ -46,10 +47,10 @@ data:
   test:
     type: 'scannetv2'
     data_root: 'dataset/scannetv2'
-    prefix: 'val'
+    prefix: 'test'
     suffix: '_inst_nostuff.pth'
     training: False
-    with_label: True
+    with_label: False
     voxel_cfg:
       scale: 50
       spatial_shape: [128, 512]
@@ -73,4 +74,3 @@ epochs: 128
 step_epoch: 50
 save_freq: 4
 pretrain: './hais_ckpt_spconv2.pth'
-work_dir: ''

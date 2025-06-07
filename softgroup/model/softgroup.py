@@ -567,6 +567,7 @@ class SoftGroup(nn.Module):
                 score_pred = cur_cls_scores * cur_iou_scores.clamp(0, 1)
                 mask_pred = torch.zeros((num_instances, num_points), dtype=torch.int, device='cuda')
                 mask_inds = cur_mask_scores > self.test_cfg.mask_score_thr
+                proposals_idx = proposals_idx.cuda()
                 cur_proposals_idx = proposals_idx[mask_inds].long()
                 mask_pred[cur_proposals_idx[:, 0], cur_proposals_idx[:, 1]] = 1
 
