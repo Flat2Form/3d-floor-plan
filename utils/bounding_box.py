@@ -161,8 +161,8 @@ def get_coords_color_obb(opt):
     pcd_class_1 = o3d.geometry.PointCloud()
     pcd_class_1.points = o3d.utility.Vector3dVector(xyz[class_1_indices])
 
-    wall_0 = make_wall(pcd_class_0)
-    wall_1 = make_wall(pcd_class_1, 1)
+    wall_0, _ = make_wall(pcd_class_0)
+    wall_1, _ = make_wall(pcd_class_1, 1)
     o3d.visualization.draw_geometries(wall_0)
     o3d.visualization.draw_geometries(wall_1)
     o3d.visualization.draw_geometries(wall_0 + wall_1)
