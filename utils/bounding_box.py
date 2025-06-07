@@ -3,7 +3,7 @@ import os
 import os.path as osp
 from operator import itemgetter
 import open3d as o3d
-
+from make_wall import make_wall
 import numpy as np
 
 # yapf:disable
@@ -140,8 +140,33 @@ SEMANTIC_IDX2NAME = {
 
 
 def get_coords_color_obb(opt):
+    semantic_file = os.path.join(opt.prediction_path, 'semantic_pred', opt.room_name + '.npy')
+    assert os.path.isfile(semantic_file), 'No semantic result - {}.'.format(semantic_file)
+    label_pred = np.load(semantic_file).astype(int)  # 0~19
+    label_pred_rgb = np.array(itemgetter(*SEMANTIC_NAMES[label_pred])(CLASS_COLOR))
+    rgb = label_pred_rgb
 
+    # 클래스 0과 1에 해당하는 포인트 인덱스 찾기
+    class_0_indices = np.where(label_pred == 0)[0]
+    class_1_indices = np.where(label_pred == 1)[0]
+
+    # 좌표 파일 로드
     coord_file = osp.join(opt.prediction_path, 'coords', opt.room_name + '.npy')
+    xyz = np.load(coord_file)
+
+    # 클래스별 포인트 클라우드 생성
+    pcd_class_0 = o3d.geometry.PointCloud()
+    pcd_class_0.points = o3d.utility.Vector3dVector(xyz[class_0_indices])
+
+    pcd_class_1 = o3d.geometry.PointCloud()
+    pcd_class_1.points = o3d.utility.Vector3dVector(xyz[class_1_indices])
+
+    wall_0 = make_wall(pcd_class_0)
+    wall_1 = make_wall(pcd_class_1, 1)
+    o3d.visualization.draw_geometries(wall_0)
+    o3d.visualization.draw_geometries(wall_1)
+    o3d.visualization.draw_geometries(wall_0 + wall_1)
+
     color_file = osp.join(opt.prediction_path, 'colors', opt.room_name + '.npy')
     xyz = np.load(coord_file)
     rgb = np.load(color_file)
@@ -186,7 +211,7 @@ def get_coords_color_obb(opt):
 
         # obb = pcd.get_axis_aligned_bounding_box()
         obb = pcd.get_oriented_bounding_box()
-        obb.color = (0, 1, 0)  # 초록색으로 설정
+        obb.color = (1, 0, 0)  # 초록색으로 설정
         
         # 클래스 ID를 클래스 이름으로 변환
         class_id = int(masks[i][1])
@@ -208,7 +233,7 @@ def get_coords_color_obb(opt):
     rgb = inst_label_pred_rgb
 
     # o3d.visualization.draw_geometries(pcd_list + obb_list)
-    return xyz, rgb, obb_list
+    return xyz, rgb, obb_list, wall_0, wall_1
 
 
 def write_ply(verts, colors, indices, output_file):
@@ -251,10 +276,9 @@ if __name__ == '__main__':
     parser.add_argument('--out', help='output point cloud file in FILE.ply format')
     opt = parser.parse_args()
 
-    xyz, rgb, obb_list= get_coords_color_obb(opt)
+    xyz, rgb, obb_list, wall_0, wall_1= get_coords_color_obb(opt)
     points = xyz[:, :3]
     colors = rgb / 255
-    # to_glb(points, colors, obb_list)
 
     if opt.out != '':
         assert '.ply' in opt.out, 'output cloud file should be in FILE.ply format'
@@ -270,9 +294,13 @@ if __name__ == '__main__':
         # 2. 시각화 윈도우를 생성하고 포인트 클라우드를 표시합니다.
         vis = o3d.visualization.Visualizer()
         vis.create_window()  # 시각화 윈도우 생성
-        vis.add_geometry(pc)  # 포인트 클라우드 추가
+        # vis.add_geometry(pc)  # 포인트 클라우드 추가
         for obb in obb_list:
             vis.add_geometry(obb)  # 포인트 클라우드 추가
+        for wall in wall_0:
+            vis.add_geometry(wall)  # 포인트 클라우드 추가
+        for wall in wall_1:
+            vis.add_geometry(wall)  # 포인트 클라우드 추가
         vis.get_render_option().point_size = 1.5  # 포인트 크기 설정
         vis.run()  # 시각화 실행
         vis.destroy_window()  # 윈도우 종료
