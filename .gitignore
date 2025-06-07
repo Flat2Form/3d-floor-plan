@@ -64,6 +64,7 @@ dist/
 *.tsv
 *.npy
 *.zip
+*.ply
 dataset/scannetv2/scans
 dataset/scannetv2/scans_test
 dataset/scannetv2/train
