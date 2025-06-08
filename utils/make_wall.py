@@ -5,6 +5,7 @@ import random
 from sklearn.cluster import KMeans
 import argparse
 import matplotlib.pyplot as plt
+
 def find_corner_points(points, plane_model):
     """평면의 방향을 고려하여 꼭짓점을 찾는 함수"""
     a, b, c, d = plane_model
@@ -223,7 +224,7 @@ def get_wall_vertices(pcd, max_planes=30):
     # 여러 평면 검출 파라미터
     max_planes = max_planes
     min_inliers = len(pcd.points) * 0.03
-    distance_threshold = 0.02
+    distance_threshold = 0.05
     rest = pcd
     wall_vertices = []
     outlier_cloud = None
