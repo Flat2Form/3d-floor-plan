@@ -1,4 +1,3 @@
-# Open3D의 RegionGrowing (ver.0.15+)
 import open3d as o3d
 import numpy as np
 import matplotlib.pyplot as plt
