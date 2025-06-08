@@ -218,3 +218,36 @@ def make_wall(pcd, max_planes=30):
     
     geometries = plane_meshes
     return geometries, outlier_cloud
+
+def get_wall_vertices(pcd, max_planes=30):
+    # 여러 평면 검출 파라미터
+    max_planes = max_planes
+    min_inliers = len(pcd.points) * 0.03
+    distance_threshold = 0.02
+    rest = pcd
+    wall_vertices = []
+    outlier_cloud = None
+    
+    # 평면 검출 반복
+    for i in range(max_planes):
+        print(f"\n{i+1}번째 평면을 검출하는 중...")
+        
+        # 평면 검출
+        plane_model, inlier_cloud, rest, success = detect_plane(
+            rest, 
+            distance_threshold=distance_threshold,
+            min_inliers=min_inliers
+        )
+
+        if not success:
+            print(f"{i+1}번째 평면: 검출 실패")
+            outlier_cloud = rest
+            break
+            
+        # 평면의 꼭짓점 찾기
+        _, corners = create_plane_mesh(inlier_cloud, plane_model)
+        wall_vertices.append(corners)
+
+        outlier_cloud = rest
+    
+    return wall_vertices, outlier_cloud
