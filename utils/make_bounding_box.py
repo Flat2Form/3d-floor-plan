@@ -105,7 +105,7 @@ def obb_to_pcd(obb, num_points_per_edge=100):
     pcd.paint_uniform_color((1, 0, 0))
     return pcd
 
-def create_bounding_boxes(pcd, instance_labels):
+def create_obb_list(pcd, instance_labels):
     """포인트 클라우드와 레이블을 입력받아 바운딩 박스 리스트를 생성하는 함수
     Args:
         pcd: 포인트 클라우드 객체 (open3d.geometry.PointCloud)
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     labels = np.load(args.label_path)
     
     # 바운딩 박스 생성
-    obb_list = create_bounding_boxes(pcd, labels)
+    obb_list = create_obb_list(pcd, labels)
     # o3d.visualization.draw_geometries(obb_list)
     obb_pcd_list = [obb_to_pcd(obb) for obb in obb_list]
     o3d.visualization.draw_geometries(obb_pcd_list)
