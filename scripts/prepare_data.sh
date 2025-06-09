@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-
-if [ -z "$1" ]; then
-    echo "Error: 파일 이름을 입력해주세요"
-    echo "Usage: sh scripts/prepare_data.sh <파일_이름>"
-    exit 1
-fi
-
-FILE_NAME=$1  # 예: scaniverse-model 62
-
-python3 dataset/scannetv2/prepare_data_inst.py --file_name "$FILE_NAME"
+# dataset/scannetv2/data 폴더의 모든 .ply 파일에 대해 처리
+for file in dataset/scannetv2/data/*.ply; do
+    if [ -f "$file" ]; then
+        # 파일 이름에서 .ply 확장자 제거
+        FILE_NAME=$(basename "$file" .ply)
+        python3 dataset/scannetv2/prepare_data_inst.py --file_name "$FILE_NAME"
+        echo "처리 완료: $FILE_NAME"
+    fi
+done
