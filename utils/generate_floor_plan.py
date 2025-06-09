@@ -35,19 +35,32 @@ def generate_floorplan_with_softgroup(room_name):
     pcds = create_3d_floor_plan(wall_vertices_0 + wall_vertices_1, obb_list)
     return pcd_list_to_pcd(pcds)
 
-# 사용 예시
-if __name__ == "__main__":
-    # pcd = load_pcd("utils/scaniverse.ply")
-    floorplan_pcd = generate_floorplan_with_softgroup("scaniverse-model")
+def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--option', type=str, choices=['dbscan', 'softgroup'], required=True,
+                      help='바운딩 박스 생성 방법 선택')
+    parser.add_argument('--filepath', type=str, required=True, 
+                      help='dbscan일 경우, 파일 경로')
+    parser.add_argument('--room_name', type=str, required=True,
+                      help='softgroup일 경우, 방 이름')
+    parser.add_argument('--out', type=str, required=True,
+                      help='출력 파일 경로')
+    args = parser.parse_args()
+
+    if args.option == 'dbscan':
+        pcd = load_pcd(args.filepath)
+        floorplan_pcd = generate_floorplan_with_dbscan(pcd)
+    else:
+        floorplan_pcd = generate_floorplan_with_softgroup(args.room_name)
+
     o3d.visualization.draw_geometries([floorplan_pcd])
+    
+    # PLY 파일로 저장
     from bounding_box import write_ply
-    # write_ply(pcd.points, pcd.colors, None, "3d_floor_plan.ply")
-    # wall_vertices, outlier_cloud = get_wall_vertices(pcd, max_planes=6)
-    # print(wall_vertices)
-    # labels = object_detection(outlier_cloud)
-    # obb_list = create_aabb_list(outlier_cloud, labels)
-    # pcds = create_3d_floor_plan(wall_vertices, [aabb.get_oriented_bounding_box() for aabb in obb_list])
-    # ret = pcd_list_to_pcd(pcds)
-    # o3d.visualization.draw_geometries([ret])
-    # o3d.visualization.draw_geometries([ret] + [outlier_cloud])
-    # o3d.visualization.draw_geometries([outlier_cloud])
+    points = np.asarray(floorplan_pcd.points)
+    colors = np.asarray(floorplan_pcd.colors)
+    write_ply(points, colors, None, args.out)
+
+if __name__ == "__main__":
+    main()
