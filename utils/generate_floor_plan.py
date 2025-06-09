@@ -4,7 +4,7 @@ import open3d as o3d
 from model_result import model_result_to_labels
 import numpy as np
 
-def generate_floorplan_with_dbscan(pcd):
+def generate_floor_plan_with_dbscan(pcd):
     wall_vertices, outlier_cloud = get_wall_vertices(pcd, max_planes=5)
     print(wall_vertices)
     labels = object_detection(outlier_cloud)
@@ -12,7 +12,7 @@ def generate_floorplan_with_dbscan(pcd):
     pcds = create_3d_floor_plan(wall_vertices, obb_list)
     return pcd_list_to_pcd(pcds)
 
-def generate_floorplan_with_softgroup(room_name):
+def generate_floor_plan_with_softgroup(room_name):
     xyz, rgb, labels = model_result_to_labels(room_name)
     wall_0_idx = np.where(labels == -2)[0]
     wall_1_idx = np.where(labels == -3)[0]
@@ -50,16 +50,16 @@ def main():
 
     if args.option == 'dbscan':
         pcd = load_pcd(args.filepath)
-        floorplan_pcd = generate_floorplan_with_dbscan(pcd)
+        floor_plan_pcd = generate_floor_plan_with_dbscan(pcd)
     else:
-        floorplan_pcd = generate_floorplan_with_softgroup(args.room_name)
+        floor_plan_pcd = generate_floor_plan_with_softgroup(args.room_name)
 
-    o3d.visualization.draw_geometries([floorplan_pcd])
+    o3d.visualization.draw_geometries([floor_plan_pcd])
     
     # PLY 파일로 저장
     from bounding_box import write_ply
-    points = np.asarray(floorplan_pcd.points)
-    colors = np.asarray(floorplan_pcd.colors)
+    points = np.asarray(floor_plan_pcd.points)
+    colors = np.asarray(floor_plan_pcd.colors)
     write_ply(points, colors, None, args.out)
 
 if __name__ == "__main__":

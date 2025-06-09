@@ -7,7 +7,7 @@ else
   OUT_FILE=$2  # 2번 arg가 있을 경우 해당 경로 사용
 fi
 
-python3 utils/generate_floorplan.py \
+python3 utils/generate_floor_plan.py \
   --option softgroup \
   --filepath none \
   --room_name "$ROOM_NAME" \
