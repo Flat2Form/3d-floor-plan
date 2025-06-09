@@ -1,11 +1,27 @@
 #!/usr/bin/env bash
 
-ROOM_NAME=$1  # 예: scaniverse-model 62
+# 사용법 출력 함수
+usage() {
+  echo "사용법: $0 <room_name> [output_file]"
+  echo "  room_name: 입력 PLY 파일 이름"
+  echo "  output_file: (선택) 출력 파일 경로. 미지정시 3d_floor_plan_files/<room_name>.ply 사용"
+  exit 1
+}
+
+# 1번 인자 체크 
+if [ -z "$1" ]; then
+  usage
+fi
+
+ROOM_NAME=$1   # 입력 PLY 파일 이름
+
 if [ -z "$2" ]; then
-  OUT_FILE="3d_floor_plan_files/$1.ply"  # 2번 arg가 없을 경우 기본 경로 설정
+  OUT_FILE="3d_floor_plan_files/$ROOM_NAME.ply"  # 2번 arg가 없을 경우 기본 경로 설정
 else
   OUT_FILE=$2  # 2번 arg가 있을 경우 해당 경로 사용
 fi
+
+echo "입력 파일: $ROOM_NAME"
 
 python3 utils/generate_floor_plan.py \
   --option softgroup \
