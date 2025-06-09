@@ -23,8 +23,15 @@ fi
 
 echo "입력 파일: $ROOM_NAME"
 
+
+if [ -f "dataset/scannetv2/data/$ROOM_NAME.ply" ]; then
+  sh scripts/prepare_data.sh;
+fi
+if [ -f "dataset/scannetv2/test/"$ROOM_NAME"_inst_nostuff.pth" ]; then
+  sh scripts/run_inference.sh;
+fi
 python3 utils/generate_floor_plan.py \
   --option softgroup \
   --filepath none \
   --room_name "$ROOM_NAME" \
-  --out "$OUT_FILE"
+  --out "$OUT_FILE";

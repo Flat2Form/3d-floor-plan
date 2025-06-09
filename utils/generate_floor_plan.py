@@ -41,7 +41,7 @@ def generate_floor_plan_with_softgroup(room_name):
     pcd.colors = o3d.utility.Vector3dVector(rgb)
 
     obb_list = create_obb_list(pcd, labels)
-    pcds = create_3d_floor_plan(wall_vertices_0 + wall_vertices_1, obb_list)
+    pcds = create_3d_floor_plan(wall_vertices, obb_list)
     return pcd_list_to_pcd(pcds)
 
 def main():
@@ -63,7 +63,7 @@ def main():
     else:
         floor_plan_pcd = generate_floor_plan_with_softgroup(args.room_name)
 
-    o3d.visualization.draw_geometries([floor_plan_pcd])
+    # o3d.visualization.draw_geometries([floor_plan_pcd])
     
     # PLY 파일로 저장
     from bounding_box import write_ply
