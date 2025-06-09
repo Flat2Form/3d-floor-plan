@@ -205,7 +205,6 @@ def find_plane_corners_by_planes(plane_models, plane_normals, plane_clouds, angl
                 corners_per_plane[idx].append(pt)
     for idx in range(num):
         if len(corners_per_plane[idx]) < 4:
-            print(len(corners_per_plane[idx]))
             fallback = compute_missing_corners(idx, plane_models, plane_normals, plane_clouds, tol_rad)
             if fallback is not None:
                 corners_per_plane[idx] = fallback.tolist()
@@ -219,64 +218,6 @@ def find_plane_corners_by_planes(plane_models, plane_normals, plane_clouds, angl
         sorted_pts = pts[np.argsort(angles)]
         plane_corners.append(sorted_pts)
     return np.stack(plane_corners, axis=0)
-
-def fill_rectangle_points(corners, num_u=50, num_v=50):
-    """
-    사각형 내부를 격자 점으로 채웁니다.
-    
-    매개변수:
-        corners: (4,3) array - 사각형의 4개 모서리 점 좌표 (순서대로)
-        num_u: int - u방향 분할 수 (기본값: 50)
-        num_v: int - v방향 분할 수 (기본값: 50)
-    
-    반환값:
-        points: (num_u*num_v, 3) array - 사각형 내부를 채우는 격자점들의 좌표
-    """
-    p00, p10, p11, p01 = corners
-    us = np.linspace(0, 1, num_u)
-    vs = np.linspace(0, 1, num_v)
-    pts = []
-    for u in us:
-        for v in vs:
-            p = (1 - u) * (1 - v) * p00 + u * (1 - v) * p10 + u * v * p11 + (1 - u) * v * p01
-            pts.append(p)
-    return np.array(pts)
-
-def extract_and_fill(pcd, max_planes=6, min_inliers_ratio=0.03, distance_threshold=0.02, angle_tol=10.0):
-    """
-    포인트 클라우드에서 벽면을 추출하고 격자 점으로 채웁니다.
-    
-    매개변수:
-        pcd: open3d.geometry.PointCloud - 입력 포인트 클라우드
-        max_planes: int - 검출할 최대 평면 수 (기본값: 6)
-        min_inliers_ratio: float - 최소 인라이어 비율 (기본값: 0.03)
-        distance_threshold: float - RANSAC 평면 검출 거리 임계값 (기본값: 0.02)
-        angle_tol: float - 평면 간 각도 허용 오차 (기본값: 10.0)
-    
-    반환값:
-        filled: list of PointCloud - 각 벽면을 채우는 포인트 클라우드들
-        vertices: (N,4,3) array - 각 벽면의 모서리 점 좌표
-    """
-    plane_models, plane_normals, plane_clouds = [], [], []
-    remainder = pcd
-    min_inliers = int(len(pcd.points)*min_inliers_ratio)
-    for i in range(1, max_planes+1):
-        model, normal, cloud, remainder, ok = detect_plane(remainder, distance_threshold, min_inliers)
-        if not ok:
-            print(f"Failed to detect plane {i}")
-            break
-        if not plane_models or any(abs(np.degrees(np.arccos(abs(np.dot(normal, n2))))) < angle_tol or abs(abs(np.degrees(np.arccos(abs(np.dot(normal, n2))))) - 90) < angle_tol for n2 in plane_normals):
-            plane_models.append(model)
-            plane_normals.append(normal)
-            plane_clouds.append(cloud)
-            print(f"Detected plane {i}")
-    vertices = find_plane_corners_by_planes(plane_models, plane_normals, plane_clouds, angle_tol)
-    filled = []
-    for rect in vertices:
-        pts = fill_rectangle_points(rect)
-        pcl = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(pts))
-        filled.append(pcl)
-    return filled, vertices
 
 def get_wall_vertices_v2(pcd, max_planes=6, min_inliers_ratio=0.03, distance_threshold=0.02, angle_tol=10.0):
     """
@@ -322,7 +263,7 @@ if __name__ == '__main__':
     input_file = "scaniverse.ply"
     pcd = o3d.io.read_point_cloud(input_file)
 
-    wall_vertices, outlier_cloud = get_wall_vertices(pcd, max_planes=5)
+    wall_vertices, outlier_cloud = get_wall_vertices_v2(pcd, max_planes=5)
     from utils import create_3d_floor_plan
     pcds = create_3d_floor_plan(wall_vertices, [])
     o3d.visualization.draw_geometries(pcds)
