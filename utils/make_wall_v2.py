@@ -278,7 +278,7 @@ def extract_and_fill(pcd, max_planes=6, min_inliers_ratio=0.03, distance_thresho
         filled.append(pcl)
     return filled, vertices
 
-def get_wall_vertices(pcd, max_planes=6, min_inliers_ratio=0.03, distance_threshold=0.02, angle_tol=10.0):
+def get_wall_vertices_v2(pcd, max_planes=6, min_inliers_ratio=0.03, distance_threshold=0.02, angle_tol=10.0):
     """
     포인트 클라우드에서 벽면의 꼭짓점들을 추출합니다.
     
