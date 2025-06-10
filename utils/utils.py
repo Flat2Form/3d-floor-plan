@@ -156,7 +156,7 @@ def object_detection(pcd):
             continue
         cluster_pcd = pcd.select_by_index(np.where(labels == i)[0])
         if len(cluster_pcd.points) < 100:
-            print(f"cluster {i} is too small")
+            print(f"cluster {i}({len(cluster_pcd.points)}) is too small")
     return labels
 
 def create_3d_floor_plan(wall_planes_vertices, obb_list):

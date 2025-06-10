@@ -45,14 +45,17 @@ def model_result_to_labels(room_name):
         # 마스크 파일 경로 생성
         mask_path = os.path.join("results", 'pred_instance', masks[i][0])
         assert os.path.isfile(mask_path), mask_path
+        print(masks[i])
         # 낮은 점수의 마스크는 건너뛰기
         if (float(masks[i][2]) < 0.09):
+            print("점수 낮음")
             continue
         # 마스크 파일 읽어서 처리
         mask = np.array(open(mask_path).read().splitlines(), dtype=int)
         # 마스크가 1인 포인트들의 인덱스 찾기
         point_indices = np.where(mask == 1)[0]
         if len(point_indices) < xyz.shape[0] * 0.02:
+            print("포인트 수 적음")
             continue
         labels[point_indices] = inst_id
         inst_id += 1
