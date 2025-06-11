@@ -256,8 +256,57 @@ def get_wall_vertices_v2(pcd, max_planes=6, min_inliers_ratio=0.03, distance_thr
     
     # 평면들의 꼭짓점 찾기
     wall_vertices = find_plane_corners_by_planes(plane_models, plane_normals, plane_clouds, angle_tol)
+    def pick_best_axes(normals):
+        """
+        normals: (N,3) array of normal vectors (not necessarily orthogonal)
+        Returns:
+            axes: (3,3) rotation matrix, 열이 새로운 x,y,z 축 (orthonormal)
+            best_idxs: 선택된 세 normals의 인덱스 튜플
+        """
+        import itertools
+
+        normals = np.array(normals, dtype=float)
+        # 정규화
+        norms = np.linalg.norm(normals, axis=1, keepdims=True)
+        norms[norms==0] = 1
+        nn = normals / norms
+
+        best_score = np.inf
+        best_idxs = None
+
+        # 모든 조합 검사
+        for idxs in itertools.combinations(range(len(nn)), 3):
+            v1, v2, v3 = nn[list(idxs)]
+            # pairwise dot products
+            d12 = abs(np.dot(v1, v2))
+            d23 = abs(np.dot(v2, v3))
+            d31 = abs(np.dot(v3, v1))
+            score = d12 + d23 + d31
+            if score < best_score:
+                best_score = score
+                best_idxs = idxs
+
+        # 선택된 벡터들
+        n1, n2, n3 = nn[list(best_idxs)]
+
+        # Gram–Schmidt 직교화
+        # 1) 첫 벡터 정규화
+        u1 = n1 / np.linalg.norm(n1)
+
+        # 2) 두번째에서 u1 투영 성분 제거
+        proj_u1_n2 = np.dot(n2, u1) * u1
+        v2 = n2 - proj_u1_n2
+        u2 = v2 / np.linalg.norm(v2)
+
+        # 3) 세 번째 축은 u1×u2
+        u3 = np.cross(u1, u2)
+        u3 /= np.linalg.norm(u3)
+
+        # 회전 행렬 (열 벡터로 쌓기)
+        axes = np.stack((u1, u2, u3), axis=1)
+        return axes, best_idxs
     
-    return wall_vertices, remainder
+    return wall_vertices, remainder, pick_best_axes(plane_normals)
 
 if __name__ == '__main__':
     input_file = "scaniverse.ply"

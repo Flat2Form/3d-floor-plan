@@ -21,6 +21,56 @@ def pcd_list_to_pcd(pcd_list):
         combined += pcd
     return combined
 
+def create_custom_aabb_list(pcd, instance_labels, axes=None, origin=None):
+    """
+    pcd: open3d.geometry.PointCloud
+    instance_labels: 각 포인트의 인스턴스 레이블 (numpy array)
+    axes: 3x3 회전 행렬. 각 열이 새로운 x, y, z 축 방향 벡터 (world frame)
+          (기본값 None일 때는 그냥 axis-aligned)
+    origin: 축의 원점 (기본값 None일 때는 (0,0,0))
+    Returns: list[o3d.geometry.OrientedBoundingBox]
+    """
+    coords = np.asarray(pcd.points)
+    if origin is None:
+        origin = np.zeros(3)
+    if axes is None:
+        axes = np.eye(3)  # 기본 축: world XYZ
+
+    R = np.array(axes)         # local → world 회전
+    Rt = R.T                   # world → local 회전
+
+    obb_list = []
+    for label in np.unique(instance_labels):
+        if label < 0:
+            continue
+        mask = instance_labels == label
+        pts = coords[mask]
+        if len(pts) == 0:
+            continue
+
+        # 1) world → local 좌표계로 투영
+        local_pts = (pts - origin) @ Rt
+
+        # 2) local 좌표계에서 AABB 계산
+        min_b = local_pts.min(axis=0)
+        max_b = local_pts.max(axis=0)
+        extent = max_b - min_b
+        center_local = (min_b + max_b) * 0.5
+
+        # 3) local 중심을 world 좌표로 되돌리기
+        center_world = origin + center_local @ R
+
+        # 4) OrientedBoundingBox 생성
+        obb = o3d.geometry.OrientedBoundingBox(
+            center=center_world,
+            R=R,
+            extent=extent
+        )
+        obb.color = (1, 0, 0)
+        obb_list.append(obb)
+
+    return obb_list
+
 def obb_to_pcd(obb):
     """
     OBB의 모든 엣지 위를 주어진 간격(spacing)으로 샘플링한 PointCloud를 생성합니다.

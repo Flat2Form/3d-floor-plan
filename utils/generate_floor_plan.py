@@ -1,14 +1,14 @@
 from make_wall import get_wall_vertices
 from make_wall_v2 import get_wall_vertices_v2
-from utils import create_3d_floor_plan, pcd_list_to_pcd, load_pcd, save_pcd, object_detection, create_obb_list, create_aabb_list
+from utils import create_3d_floor_plan, pcd_list_to_pcd, load_pcd, save_pcd, object_detection, create_obb_list, create_aabb_list, create_custom_aabb_list
 import open3d as o3d
 from model_result import model_result_to_labels
 import numpy as np
 
 def generate_floor_plan_with_dbscan(pcd):
-    wall_vertices, outlier_cloud = get_wall_vertices_v2(pcd, max_planes=6)
+    wall_vertices, outlier_cloud, (axes, best_idxs) = get_wall_vertices_v2(pcd, max_planes=6, distance_threshold=0.1)
     labels = object_detection(outlier_cloud)
-    obb_list = create_obb_list(outlier_cloud, labels)
+    obb_list = create_custom_aabb_list(outlier_cloud, labels, axes, best_idxs)
     pcds = create_3d_floor_plan(wall_vertices, obb_list)
     return pcd_list_to_pcd(pcds)
 
